@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class CubeController : MonoBehaviour
 {
+    public int myX, myY;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -18,7 +20,7 @@ public class CubeController : MonoBehaviour
 
     private void OnMouseDown() //Built-in Unity functions
     {
-        GameController.ProcessClick(gameObject);
+        GameController.ProcessClick(gameObject); //gameObject is self referential to whatever object holds this script (each instantiated cube)
     }
 
     private void OnMouseOver()
