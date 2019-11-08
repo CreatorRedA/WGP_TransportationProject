@@ -4,23 +4,24 @@ using UnityEngine;
 
 public class CubeController : MonoBehaviour
 {
-    public int myX, myY;
+    public int myX, myY; //Present in each individual cube instantiated
 
-    // Start is called before the first frame update
+    //No instructions
     void Start()
     {
 
     }
 
-    // Update is called once per frame
+    //No instructions
     void Update()
     {
 
     }
 
+    //Check for player interaction with cubes (click or hover). 
     private void OnMouseDown() //Built-in Unity functions
     {
-        GameController.ProcessClick(gameObject); //gameObject is self referential to whatever object holds this script (each instantiated cube)
+       GameController.ProcessClick(gameObject); //gameObject is self referential to whatever object holds this script (each instantiated cube)
     }
 
     private void OnMouseOver()
