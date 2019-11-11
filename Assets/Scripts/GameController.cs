@@ -15,27 +15,30 @@ public class GameController : MonoBehaviour
     int xPos = -16;
     int yPos = 10;
 
-    int cubeColumns = 9;
-    int cubeRows = 16;
+    int cubeRows = 9;
+    int cubeColumns = 16;
     static GameObject[,] cubeGridArr;
 
     public float turnTimer = 1.5f;
     float turnLength = 1.5f;
 
-    static int currentCargo = 0;
+    static int currentCargo = 90;
     static int cargoCap = 90;
     static int deliveredCargo;
+
+    static int travelDistanceX;
+    static int travelDistanceY;
 
     //At start: Create sky cubes and set the airplane. Set the delivery point.
     void Start()
     {
-        cubeGridArr = new GameObject[cubeColumns, cubeRows];
+        cubeGridArr = new GameObject[cubeRows, cubeColumns];
 
         //Spawn cubes in rows
-        for (int i = 0; i < cubeColumns; i++)
+        for (int i = 0; i < cubeRows; i++)
         {
 
-            for (int k = 0; k < cubeRows; k++)
+            for (int k = 0; k < cubeColumns; k++)
             {
                 //Place an instance of the cubePrefab inside this position of the array
                 cubeGridArr[i, k] = Instantiate(cubePrefab, new Vector3(xPos, yPos, 0), Quaternion.identity); 
@@ -46,60 +49,67 @@ public class GameController : MonoBehaviour
                 xPos += 2;
             }
 
-            //Move to lower row
-            yPos -= 2;
+            //Move to higher row
+            yPos += 2;
             xPos = -16;
         }
 
         //Set airplaneCube
-        airplaneCube = cubeGridArr[0, 0];
+        airplaneCube = cubeGridArr[8, 0];
         SetColor(airplaneCube,Color.red);
 
         //Set deliveryCube
-        deliveryCube = cubeGridArr[8, 15];
+        deliveryCube = cubeGridArr[0, 15];
         SetColor(deliveryCube,Color.black);
 
     }
 
-    //Every frame, check to gather cargo. Display Cargo. Check if cargo is delviered.
+    //Every frame, check to gather cargo. Display Cargo. Look for where to move.
     void Update()
     {
         //Print cargo to screen
         cargoText.text = "Cargo: " + currentCargo;
         scoreText.text = "Score " + deliveredCargo;
 
-        //Every X seconds, if in starting position, gain cargo
-        if (Time.time >= turnTimer && cubeGridArr[0,0] == airplaneCube)
+        //Every X seconds
+        if (Time.time >= turnTimer)
         {
-            //increase cargo
-            if(currentCargo < cargoCap)
+            
+            //If in starting position, gain cargo
+            if (cubeGridArr[0, 0] == airplaneCube && currentCargo < cargoCap)
             {
-               currentCargo += 10;
+                currentCargo += 10;
             }
+
+            DetectMovement();
 
             //Reset the timer for gathering cargo
             turnTimer = Time.time + turnLength;
         }
-  
+
     }
 
-    //Wait to be called by individual CubeController.cs. Change airplane and add cargo.
-    public static void ProcessClick(GameObject clickedCube)
+    //Wait to be called by individual CubeController.cs. Change airplane and add cargo. 
+    public static void ProcessClick(GameObject clickedCube, int x, int y)
     {
+        print("myX: " + clickedCube.GetComponent<CubeController>().myX + "... myY: " + clickedCube.GetComponent<CubeController>().myY);
+
         //if there is an airplaneCube and the cube clicked was white (not the airplane or delivery point)
         if (clickedCube.GetComponent<Renderer>().material.color == Color.white && airplaneCube != null)
         {
-            //set the old airplaneCube to white + set new airplaneCube to the clickedCube + make the new airplaneCube red
-            SetColor(airplaneCube,Color.white);
-            airplaneCube = clickedCube;
-            SetColor(airplaneCube,Color.red);
+            //travelDistanceX = clickedCube.GetComponent<CubeController>().myX - airplaneCube.GetComponent<CubeController>().myX;
+            //travelDistanceY = clickedCube.GetComponent<CubeController>().myY - airplaneCube.GetComponent<CubeController>().myY;
 
-            //Reset deliveryCube
-            deliveryCube = cubeGridArr[8,15];
-            SetColor(deliveryCube,Color.black);
+            if(clickedCube.GetComponent<CubeController>().myX > airplaneCube.GetComponent<CubeController>().myX)
+            {
+                airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX + 1, airplaneCube.GetComponent<CubeController>().myY];
+            }
 
-            //Console
-            print("YOU JUST CHANGED THE AIRPLANE CUBE AT: " + (Time.time));
+            if (clickedCube.GetComponent<CubeController>().myX < airplaneCube.GetComponent<CubeController>().myX)
+            {
+                airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX - 1, airplaneCube.GetComponent<CubeController>().myY];
+            }
+
         }
 
         //if you click the deliveryCube, empty cargo (airplane remains active)
@@ -137,4 +147,77 @@ public class GameController : MonoBehaviour
     {
        objPlugin.GetComponent<Renderer>().material.color = colorPlugin;
     }
+
+    void DetectMovement()
+    {
+
+    }
 }
+
+/*/When using arrow keys: Reset old airplaneCube + Move airplane based on key press + Make airplaneCube red MAKE ME A FUNCTION
+if(Input.GetKeyDown(KeyCode.UpArrow))
+{
+    //If within bounds of array
+    if(airplaneCube.GetComponent<CubeController>().myY-1 >= 0)
+    {
+        SetColor(airplaneCube, Color.white);
+
+        //Change airplane position
+        airplaneCube.GetComponent<CubeController>().myY -= 1;
+        airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX, airplaneCube.GetComponent<CubeController>().myY];
+
+        SetColor(airplaneCube, Color.red);
+    }
+}
+
+if (Input.GetKeyDown(KeyCode.DownArrow))
+{
+    if (airplaneCube.GetComponent<CubeController>().myY + 1 <= 8)
+    {
+        SetColor(airplaneCube, Color.white);
+
+        airplaneCube.GetComponent<CubeController>().myY += 1;
+        airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX, airplaneCube.GetComponent<CubeController>().myY];
+
+        SetColor(airplaneCube, Color.red);
+    }
+}
+
+if (Input.GetKeyDown(KeyCode.LeftArrow))
+{
+    if (airplaneCube.GetComponent<CubeController>().myX - 1 >= 0)
+    {
+        SetColor(airplaneCube, Color.white);
+
+        airplaneCube.GetComponent<CubeController>().myX -= 1;
+        airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX, airplaneCube.GetComponent<CubeController>().myY];
+
+        SetColor(airplaneCube, Color.red);
+    }
+}
+
+if (Input.GetKeyDown(KeyCode.RightArrow))
+{
+    if (airplaneCube.GetComponent<CubeController>().myX + 1 <= 15)
+    {
+        SetColor(airplaneCube, Color.white);
+
+        airplaneCube.GetComponent<CubeController>().myX += 1;
+        airplaneCube = cubeGridArr[airplaneCube.GetComponent<CubeController>().myX, airplaneCube.GetComponent<CubeController>().myY];
+
+        SetColor(airplaneCube, Color.red);
+    }
+}*/
+
+/*            //set the old airplaneCube to white + set new airplaneCube to the clickedCube + make the new airplaneCube red
+            SetColor(airplaneCube,Color.white);
+            airplaneCube = clickedCube;
+            SetColor(airplaneCube,Color.red);
+
+            //Reset deliveryCube
+            deliveryCube = cubeGridArr[0,15];
+            SetColor(deliveryCube,Color.black);
+
+            //Console
+            print("YOU JUST CHANGED THE AIRPLANE CUBE AT: " + (Time.time));
+ */

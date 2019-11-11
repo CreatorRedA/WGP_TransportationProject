@@ -21,7 +21,7 @@ public class CubeController : MonoBehaviour
     //Check for player interaction with cubes (click or hover). 
     private void OnMouseDown() //Built-in Unity functions
     {
-       GameController.ProcessClick(gameObject); //gameObject is self referential to whatever object holds this script (each instantiated cube)
+       GameController.ProcessClick(gameObject, myX, myY); //gameObject is self referential to whatever object holds this script (each instantiated cube)
     }
 
     private void OnMouseOver()
